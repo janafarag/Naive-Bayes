@@ -1,5 +1,6 @@
-import math
+
 import pandas as pd
+import math
 
 
 class NaiveBayes:
@@ -34,16 +35,20 @@ class NaiveBayes:
         for class_label in self.classes:
             # create new dataframe only containing the specific class data (e.g. all rows with no nephritis)
             class_data = data[data[target_name] == class_label]
-            # add class probability
+            # add class probability (percentage of class in whole dataset)
             self.class_probabilities[class_label] = len(class_data) / len(data)
             self.feature_probabilities[class_label] = {}
+            # calculate data for every symptom (feature)
             for column in data.columns:
                 if column != target_name:
                     if self.continuous is not None and self.continuous[column]:
+                        # fit norm distro to continuous data
                         mean = class_data[column].mean()
                         std = class_data[column].std()
+                        # add continuous feature prob of symptom
                         self.feature_probabilities[class_label][column] = (mean, std)
                     else:
+                        # count occurrences of symptoms for the class
                         probabilities = class_data[column].value_counts(normalize=True)
                         self.feature_probabilities[class_label][column] = probabilities.to_dict()
 
@@ -58,7 +63,7 @@ class NaiveBayes:
         for index, row in data.iterrows():
             probabilities = {}
             for class_label in self.classes:
-                probability = np.log(self.class_probabilities[class_label])
+                probability = math.log(self.class_probabilities[class_label])
                 for column in data.columns:
                     if column != self.target_name:
                         value = row[column]
